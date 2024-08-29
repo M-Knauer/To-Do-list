@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TextInput, FlatList, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import styles from './styles/AppStyles';
 
 export default function App() {
   const [task, setTask] = useState('');
@@ -15,7 +16,7 @@ export default function App() {
         ));
         setEditingTask(null);
       } else {
-        setTasks([...tasks, { key: Math.random().toString(), value: task }]);
+        setTasks([...tasks, { key: Math.random().toString(), value: task, checked: false }]);
       }
       setTask('');
     }
@@ -34,55 +35,50 @@ export default function App() {
     }
   };
 
+  const toggleCheck = (taskKey) => {
+    setTasks(tasks.map(item =>
+      item.key === taskKey ? { ...item, checked: !item.checked } : item
+    ));
+  };
+
   return (
     <View style={styles.container}>
-      <TextInput
-        placeholder="Adicione ou edite uma tarefa"
-        style={styles.input}
-        value={task}
-        onChangeText={setTask}
-      />
-      <Button
-        title={editingTask ? "Salvar Alteração" : "Adicionar Tarefa"}
-        onPress={addTask}
-        color="green"
-      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholder="Adicione a tarefa"
+          style={styles.input}
+          value={task}
+          onChangeText={setTask}
+        />
+        <TouchableOpacity style={styles.addButton} onPress={addTask}>
+          <Ionicons name="add" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={tasks}
         renderItem={({ item }) => (
           <View style={styles.taskItem}>
-            <TouchableOpacity onPress={() => editTask(item)}>
-              <Text>{item.value}</Text>
+            <TouchableOpacity onPress={() => toggleCheck(item.key)}>
+              <Text style={item.checked ? styles.checkedTask : styles.taskText}>
+                {item.checked ? '✔ ' : ''}{item.value}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => deleteTask(item.key)}>
-              <Ionicons name="trash" size={24} color="red" />
-            </TouchableOpacity>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                onPress={() => editTask(item)}
+                disabled={item.checked} // Desabilita o botão se a tarefa estiver marcada como concluída
+                style={item.checked ? styles.disabledButton : {}}
+              >
+                <Ionicons name="pencil" size={24} color="blue" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => deleteTask(item.key)} style={styles.deleteButton}>
+                <Ionicons name="trash" size={24} color="red" />
+              </TouchableOpacity>
+            </View>
           </View>
         )}
+        keyExtractor={item => item.key}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 30,
-  },
-  input: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginBottom: 10,
-    paddingVertical: 5,
-  },
-  taskItem: {
-    padding: 10,
-    marginVertical: 5,
-    backgroundColor: '#f9f9f9',
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 5,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-});
