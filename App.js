@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function App() {
   const [task, setTask] = useState('');
@@ -25,6 +26,14 @@ export default function App() {
     setEditingTask(task);
   };
 
+  const deleteTask = (taskKey) => {
+    setTasks(tasks.filter(item => item.key !== taskKey));
+    if (editingTask && editingTask.key === taskKey) {
+      setEditingTask(null);
+      setTask('');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -36,15 +45,19 @@ export default function App() {
       <Button
         title={editingTask ? "Salvar Alteração" : "Adicionar Tarefa"}
         onPress={addTask}
+        color="green"
       />
       <FlatList
         data={tasks}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => editTask(item)}>
-            <View style={styles.taskItem}>
+          <View style={styles.taskItem}>
+            <TouchableOpacity onPress={() => editTask(item)}>
               <Text>{item.value}</Text>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => deleteTask(item.key)}>
+              <Ionicons name="trash" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
         )}
       />
     </View>
@@ -68,5 +81,8 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });
