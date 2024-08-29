@@ -1,32 +1,50 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, FlatList, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Button, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 export default function App() {
   const [task, setTask] = useState('');
   const [tasks, setTasks] = useState([]);
+  const [editingTask, setEditingTask] = useState(null);
 
   const addTask = () => {
     if (task.length > 0) {
-      setTasks([...tasks, { key: Math.random().toString(), value: task }]);
+      if (editingTask) {
+        setTasks(tasks.map(item =>
+          item.key === editingTask.key ? { ...item, value: task } : item
+        ));
+        setEditingTask(null);
+      } else {
+        setTasks([...tasks, { key: Math.random().toString(), value: task }]);
+      }
       setTask('');
     }
+  };
+
+  const editTask = (task) => {
+    setTask(task.value);
+    setEditingTask(task);
   };
 
   return (
     <View style={styles.container}>
       <TextInput
-        placeholder="Adicione uma tarefa"
+        placeholder="Adicione ou edite uma tarefa"
         style={styles.input}
         value={task}
         onChangeText={setTask}
       />
-      <Button title="Adicionar Tarefa" onPress={addTask} />
+      <Button
+        title={editingTask ? "Salvar Alteração" : "Adicionar Tarefa"}
+        onPress={addTask}
+      />
       <FlatList
         data={tasks}
         renderItem={({ item }) => (
-          <View style={styles.taskItem}>
-            <Text>{item.value}</Text>
-          </View>
+          <TouchableOpacity onPress={() => editTask(item)}>
+            <View style={styles.taskItem}>
+              <Text>{item.value}</Text>
+            </View>
+          </TouchableOpacity>
         )}
       />
     </View>
