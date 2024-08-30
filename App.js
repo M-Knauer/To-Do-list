@@ -1,12 +1,28 @@
-import React, { useState } from 'react';
-import { View, TextInput, FlatList, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import TaskList from './components/TaskList';
+import { saveTasks, loadTasks } from './utils/storage';
 import styles from './styles/AppStyles';
 
 export default function App() {
   const [task, setTask] = useState('');
   const [tasks, setTasks] = useState([]);
   const [editingTask, setEditingTask] = useState(null);
+  const [showIncompleteTasks, setShowIncompleteTasks] = useState(true);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(true);
+
+  useEffect(() => {
+    async function fetchTasks() {
+      const storedTasks = await loadTasks();
+      setTasks(storedTasks);
+    }
+    fetchTasks();
+  }, []);
+
+  useEffect(() => {
+    saveTasks(tasks);
+  }, [tasks]);
 
   const addTask = () => {
     if (task.length > 0) {
@@ -41,8 +57,12 @@ export default function App() {
     ));
   };
 
+  const incompleteTasks = tasks.filter(task => !task.checked);
+  const completedTasks = tasks.filter(task => task.checked);
+
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Lista de afazeres</Text>
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Adicione a tarefa"
@@ -54,30 +74,25 @@ export default function App() {
           <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={tasks}
-        renderItem={({ item }) => (
-          <View style={styles.taskItem}>
-            <TouchableOpacity onPress={() => toggleCheck(item.key)}>
-              <Text style={item.checked ? styles.checkedTask : styles.taskText}>
-                {item.checked ? '✔ ' : ''}{item.value}
-              </Text>
-            </TouchableOpacity>
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                onPress={() => editTask(item)}
-                disabled={item.checked} // Desabilita o botão se a tarefa estiver marcada como concluída
-                style={item.checked ? styles.disabledButton : {}}
-              >
-                <Ionicons name="pencil" size={24} color="blue" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => deleteTask(item.key)} style={styles.deleteButton}>
-                <Ionicons name="trash" size={24} color="red" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-        keyExtractor={item => item.key}
+
+      <TaskList
+        tasks={incompleteTasks}
+        toggleCheck={toggleCheck}
+        editTask={editTask}
+        deleteTask={deleteTask}
+        title="Tarefas Pendentes"
+        isVisible={showIncompleteTasks}
+        toggleVisibility={() => setShowIncompleteTasks(!showIncompleteTasks)}
+      />
+
+      <TaskList
+        tasks={completedTasks}
+        toggleCheck={toggleCheck}
+        editTask={editTask}
+        deleteTask={deleteTask}
+        title="Concluídas"
+        isVisible={showCompletedTasks}
+        toggleVisibility={() => setShowCompletedTasks(!showCompletedTasks)}
       />
     </View>
   );
