@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, FlatList, Text, TouchableOpacity } from 'react-native';
+import { View, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import TaskItem from './TaskItem';
 import styles from '../styles/AppStyles';
 
@@ -23,6 +23,7 @@ export default function TaskList({ tasks, toggleCheck, editTask, deleteTask, tit
             />
           )}
           keyExtractor={item => item.key}
+          style={styles.taskList}
         />
       )}
     </View>

@@ -69,4 +69,10 @@ export default StyleSheet.create({
   disabledButton: {
     opacity: 0.3,
   },
+  taskList: {
+    maxHeight: 300,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
 });
